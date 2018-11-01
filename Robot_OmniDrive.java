@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 
 import org.firstinspires.ftc.robotcontroller.external.samples.PushbotAutoDriveByGyro_Linear;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
  * This is NOT an opmode.
@@ -56,7 +57,9 @@ public class Robot_OmniDrive
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * 3.1415);
     static final double     DRIVE_SPEED             = 0.6;
     static final double     TURN_SPEED              = 0.5;
+    static final double     IN_RANGE                = 1;
 
+    static final double     P_TURN_COEFF           = 0.15;
     static final double     P_DRIVE_COEFF           = 0.15;     // Larger is more responsive, but also less stable
 
     private ElapsedTime     runtime = new ElapsedTime();
@@ -323,7 +326,30 @@ public class Robot_OmniDrive
         rightDrive.setMode(mode);
       //  backDrive.setMode(mode);
     }
+    //create a gyro turn method for our robot
+    public void gyroTurn(double speed, double angle, double pCoeff) {
+        double error = getError(angle);
+        double steer;
+        boolean heading = false;
+        double leftSpeed;
+        double rightSpeed;
+        while (!heading) {
 
+            if (Math.abs(error) <= IN_RANGE) {
+                steer = 0.0;
+                leftSpeed = 0.0;
+                rightSpeed = 0.0;
+                heading = true;
 
+            } else {
+                steer = getSteer(error,pCoeff);
+                rightSpeed = speed * steer;
+                leftSpeed = -rightSpeed;
+            }
+
+            leftDrive.setPower(leftSpeed);
+            rightDrive.setPower(rightSpeed);
+        }
+    }
 }
 

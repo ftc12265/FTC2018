@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.disnodeteam.dogecv.CameraViewDisplay;
 import com.disnodeteam.dogecv.DogeCV;
 import com.disnodeteam.dogecv.detectors.DogeCVDetector;
 import com.disnodeteam.dogecv.filters.DogeCVColorFilter;
@@ -8,6 +9,8 @@ import com.disnodeteam.dogecv.scoring.MaxAreaScorer;
 import com.disnodeteam.dogecv.scoring.PerfectAreaScorer;
 import com.disnodeteam.dogecv.scoring.RatioScorer;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -37,7 +40,7 @@ public class GoldAlignDetector extends DogeCVDetector {
     private boolean aligned  = false; // Is the gold mineral aligned
     private double  goldXPos = 0;     // X Position (in pixels) of the gold element
 
-
+    private LinearOpMode myOpMode;
 
 
 
@@ -67,7 +70,23 @@ public class GoldAlignDetector extends DogeCVDetector {
     /***
      * Send telemetry data to indicate navigation status
      */
+    public void init(LinearOpMode opMode){
+        myOpMode = opMode;
+        init(myOpMode.hardwareMap.appContext, CameraViewDisplay.getInstance()); // Initialize it with the app context and camera
+        useDefaults();  // Set detector to use default settings
+        //optional tunning
+        alignSize = 100;  // How wide (in pixels) is the range in which the gold object will be aligned. (Represented by green bars in the preview)
+        alignPosOffset = 0; // How far from center frame to offset this alignment zone.
+        downscale = 0.4; // How much to downscale the input frames
+        areaScoringMethod = DogeCV.AreaScoringMethod.MAX_AREA; // Can also be PERFECT_AREA
+        //detector.perfectAreaScorer.perfectArea = 10000; // if using PERFECT_AREA scoring
+        maxAreaScorer.weight = 0.005; //
 
+        ratioScorer.weight = 5; //
+        ratioScorer.perfectRatio = 1.0; // Ratio adjustment
+
+        enable(); // Start the detector!
+    }
 
     @Override
     public Mat process(Mat input) {
@@ -205,5 +224,14 @@ public class GoldAlignDetector extends DogeCVDetector {
      */
     public boolean isFound() {
         return found;
+    }
+
+    public void loop() {
+        myOpMode.telemetry.addData("IsAligned" , getAligned()); // Is the bot aligned with the gold mineral?
+        myOpMode.telemetry.addData("X Pos" , getXPosition()); // Gold X position.
+    }
+    public void stop() {
+        // Disable the detector
+        disable();
     }
 }

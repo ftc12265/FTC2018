@@ -75,6 +75,7 @@ public class TeleopOpmode extends LinearOpMode {
     @Override
     public void runOpMode() {
         String target = null;
+        boolean closeEnough = false;
 
         // Initialize the robot and navigation,goldaligndetector
         robot.initDrive(this);
@@ -98,6 +99,9 @@ public class TeleopOpmode extends LinearOpMode {
             telemetry.update();
         }
 
+        //add initial motion
+
+
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -108,10 +112,11 @@ public class TeleopOpmode extends LinearOpMode {
             // auto drive or manual drive?
             // In auto drive, the robot will approach any target it can see and then press against it
             // In manual drive the robot responds to the Joystick.
-            if (nav.targetsAreVisible() && gamepad1.left_bumper) {
+            if (nav.targetsAreVisible() && gamepad1.left_bumper && !closeEnough) {
                 // Calculate automatic target approach
                 target = nav.targetName;
-                nav.cruiseControl(TARGET_DISTANCE);
+                closeEnough = nav.cruiseControl(TARGET_DISTANCE);
+
 
             } else {
                 // Drive the robot using the joysticks
@@ -126,11 +131,12 @@ public class TeleopOpmode extends LinearOpMode {
 
             robot.moveRobot();
             telemetry.update();
+
         }
 
         //return the target wall the robot facing
         if (target == "Back Wall"){
-            telemetry.addData(">", "Shutting Down. Bye!");
+
         }
 
 
